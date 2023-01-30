@@ -1,14 +1,5 @@
-# Welcome to your CDK TypeScript project
+# Healthlake Change Data Catpure
 
-This is a blank project for CDK development with TypeScript.
+Example solution for adding Change Data Capture to AWS' Healthlake.  This is a CDK project that supports this article [https://www.binaryheap.com/rild](Blog Article). 
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
-
-## Useful commands
-
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `cdk deploy`      deploy this stack to your default AWS account/region
-* `cdk diff`        compare deployed stack with current state
-* `cdk synth`       emits the synthesized CloudFormation template
+Be careful when running the infra as it'll stand up a Healthlake store which costs $.27 / hr
