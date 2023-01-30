@@ -21,9 +21,9 @@ export class FunctionsStack extends cdk.NestedStack {
 
     constructor(scope: Construct, id: string, props: FunctionsStackProps, hl: CfnFHIRDatastore, key: Key) {
         super(scope, id, props);
-        this._storeId = Fn.importValue('main-HealthlakeInfra-primary-store-id')
+        this._storeId = hl.attrDatastoreId;
         this.buildPatientHydrator(hl, key);
-        this.buildPatientPublisher(hl);
+        this.buildPatientPublisher();
 
         Tags.of(this._patientHydrator).add("version", props.version);
         Tags.of(this._patientPublisher).add("version", props.version);
@@ -44,7 +44,7 @@ export class FunctionsStack extends cdk.NestedStack {
         addHealthlakeToFunc(this, 'PatientHydratorFunction', this._patientHydrator, hl, key);
     }
 
-    buildPatientPublisher = (hl: CfnFHIRDatastore) => {
+    buildPatientPublisher = () => {
         this._patientPublisher = new GoFunction(this, `PatientPublisherFunction`, {
             entry: path.join(__dirname, `../src/patient-publisher`),
             functionName: `healthlake-cdc-patient-publisher`,

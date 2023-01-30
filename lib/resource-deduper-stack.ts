@@ -4,7 +4,6 @@ import {FunctionsStackProps} from "./functions-stack";
 import {Key} from "aws-cdk-lib/aws-kms";
 import {AttributeType, BillingMode, Table, TableEncryption} from "aws-cdk-lib/aws-dynamodb";
 import {GoFunction} from "@aws-cdk/aws-lambda-go-alpha";
-import {getLogLevel} from "./pipeline-utils";
 import * as path from "path";
 import {IFunction} from "aws-cdk-lib/aws-lambda";
 
@@ -14,13 +13,13 @@ export class ResourceDeduperStack extends NestedStack {
     constructor(scope: Construct, id: string, props: FunctionsStackProps) {
         super(scope, id, props);
 
-        const key = new Key(this, `${props?.options.stackNamePrefix}-${props?.options.stackName}-Key`,
+        const key = new Key(this, `Key`,
             {
                 removalPolicy: RemovalPolicy.DESTROY
             });
-        key.addAlias(`alias/${props.options.reposName}`);
+        key.addAlias(`alias/table-key`);
 
-        const tableName = `${props?.options.stackNamePrefix}-MdaResourceDeduper`;
+        const tableName = `ResourceDeduper`;
 
         const table = new Table(this, id, {
             billingMode: BillingMode.PAY_PER_REQUEST,
@@ -35,12 +34,11 @@ export class ResourceDeduperStack extends NestedStack {
 
         this._func = new GoFunction(this, `ResourceDedupeFunc`, {
             entry: path.join(__dirname, `../src/resource-deduper`),
-            functionName: `${props?.options.stackNamePrefix}-healthlake-cdc-resource-deduper`,
+            functionName: `healthlake-cdc-resource-deduper`,
             timeout: Duration.seconds(30),
             environment: {
                 "DD_FLUSH_TO_LOG": "true",
                 "DD_TRACE_ENABLED": "true",
-                "LOG_LEVEL": getLogLevel(props.stage),
                 "TABLE_NAME": tableName
             },
         });
