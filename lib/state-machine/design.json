@@ -1,0 +1,134 @@
+{
+  "Comment": "Healthlake CDC Hydrator and Publisher",
+  "StartAt": "Pause for Healthlake to write",
+  "States": {
+    "Pause for Healthlake to write": {
+      "Type": "Wait",
+      "Seconds": 10,
+      "Next": "Hydrator Type"
+    },
+    "Patient Publisher Map": {
+      "Type": "Map",
+      "End": true,
+      "Iterator": {
+        "StartAt": "Patient Publisher",
+        "States": {
+          "Patient Publisher": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "OutputPath": "$.Payload",
+            "Parameters": {
+              "Payload.$": "$",
+              "FunctionName": "${PatientPublisherFunc}"
+            },
+            "Retry": [
+              {
+                "ErrorEquals": [
+                  "Lambda.ServiceException",
+                  "Lambda.AWSLambdaException",
+                  "Lambda.SdkClientException",
+                  "Lambda.TooManyRequestsException"
+                ],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 6,
+                "BackoffRate": 2
+              }
+            ],
+            "Next": "Patient Dedupe"
+          },
+          "Patient Dedupe": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "OutputPath": "$.Payload",
+            "Parameters": {
+              "Payload.$": "$",
+              "FunctionName": "${ResourceDeduperFunc}"
+            },
+            "Retry": [
+              {
+                "ErrorEquals": [
+                  "Lambda.ServiceException",
+                  "Lambda.AWSLambdaException",
+                  "Lambda.SdkClientException",
+                  "Lambda.TooManyRequestsException"
+                ],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 6,
+                "BackoffRate": 2
+              }
+            ],
+            "Next": "Patient Is Deduped"
+          },
+          "Patient Is Deduped": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "Variable": "$.meta.isDupe",
+                "BooleanEquals": false,
+                "Next": "Publish Patient Event"
+              }
+            ],
+            "Default": "Patient has been sent Success"
+          },
+          "Patient has been sent Success": {
+            "Type": "Succeed"
+          },
+          "Publish Patient Event": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::aws-sdk:eventbridge:putEvents",
+            "Parameters": {
+              "Entries": [
+                {
+                  "Detail.$": "$",
+                  "DetailType": "FhirPatientChanged",
+                  "EventBusName": "main-mda-bus",
+                  "Source": "com.curantis.fhir-patient"
+                }
+              ]
+            },
+            "End": true
+          }
+        }
+      },
+      "ItemsPath": "$.patients",
+      "MaxConcurrency": 10
+    },
+    "Hydrator Type": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.details.requestParameters.resourceType",
+          "StringEquals": "Patient",
+          "Next": "Patient Hydrator"
+        }
+      ],
+      "Default": "Success"
+    },
+    "Success": {
+      "Type": "Succeed"
+    },
+    "Patient Hydrator": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "${PatientHydratorFunc}"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "Patient Publisher Map"
+    }
+  }
+}
