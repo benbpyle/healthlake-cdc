@@ -8,7 +8,7 @@ import {Key} from "aws-cdk-lib/aws-kms";
 import {Effect, PolicyStatement} from "aws-cdk-lib/aws-iam";
 import {CfnFHIRDatastore} from "aws-cdk-lib/aws-healthlake";
 
-export const addHealthlakeToFunc = (scope: Construct, id: string, func: IFunction, hl: CfnFHIRDatastore) => {
+export const addHealthlakeToFunc = (scope: Construct, id: string, func: IFunction, hl: CfnFHIRDatastore, key: Key) => {
     func.addToRolePolicy(
         new PolicyStatement({
             actions: [
@@ -28,8 +28,6 @@ export const addHealthlakeToFunc = (scope: Construct, id: string, func: IFunctio
         }),
     );
 
-    const primaryStoreKeyArn = Fn.importValue('main-HealthlakeInfra-primary-store-kms-arn');
-    const primaryStoreKey = Key.fromKeyArn(scope, `${id}-store-key`, primaryStoreKeyArn)
-    primaryStoreKey.grantEncryptDecrypt(func);
+    key.grantEncryptDecrypt(func);
 }
 

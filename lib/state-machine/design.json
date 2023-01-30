@@ -82,7 +82,7 @@
                   "Detail.$": "$",
                   "DetailType": "FhirPatientChanged",
                   "EventBusName": "main-mda-bus",
-                  "Source": "com.curantis.fhir-patient"
+                  "Source": "com.fhir-patient"
                 }
               ]
             },

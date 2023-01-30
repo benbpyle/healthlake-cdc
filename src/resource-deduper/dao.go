@@ -15,7 +15,7 @@ import (
 )
 
 type DedupeRepository interface {
-	WriteDedupeWithContext(context.Context, string, time.Time, *lib.CurantisPublishedPatientEvent) error
+	WriteDedupeWithContext(context.Context, string, time.Time, *lib.PublishedPatientEvent) error
 }
 
 type DynamoDedupeRepository struct {
@@ -30,7 +30,7 @@ func NewDynamoDedupeRepository(db *dynamodb.DynamoDB, tableName string) *DynamoD
 	}
 }
 
-func (d *DynamoDedupeRepository) WriteDedupeWithContext(ctx context.Context, key string, eventTime time.Time, state *lib.CurantisPublishedPatientEvent) error {
+func (d *DynamoDedupeRepository) WriteDedupeWithContext(ctx context.Context, key string, eventTime time.Time, state *lib.PublishedPatientEvent) error {
 	span, _ := tracer.SpanFromContext(ctx)
 	stringTime := eventTime.Format(time.RFC3339)
 	marshalledEvent, err := dynamodbattribute.MarshalMap(&DedupeRecord{
@@ -71,7 +71,7 @@ func (d *DynamoDedupeRepository) WriteDedupeWithContext(ctx context.Context, key
 }
 
 type DedupeRecord struct {
-	PK       string                            `dynamodbav:"PK"`
-	SK       string                            `dynamodbav:"SK"`
-	Resource lib.CurantisPublishedPatientEvent `dynamodbav:"Resource"`
+	PK       string                    `dynamodbav:"PK"`
+	SK       string                    `dynamodbav:"SK"`
+	Resource lib.PublishedPatientEvent `dynamodbav:"Resource"`
 }

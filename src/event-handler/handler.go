@@ -48,7 +48,7 @@ func handler(ctx context.Context, event CloudtrailEvent) error {
 			"correlationId": newCtx.Value("correlationId"),
 		}).Info("Logging out the event")
 
-	body, _ := json.Marshal(lib.NewCurantisIncomingEvent(
+	body, _ := json.Marshal(lib.NewIncomingEvent(
 		"1.0",
 		"HealthLakeCDC",
 		"CloudTrail",

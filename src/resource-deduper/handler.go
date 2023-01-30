@@ -29,7 +29,7 @@ func main() {
 	lambda.Start(ddlambda.WrapFunction(handler, lib.DataDogConfig()))
 }
 
-func handler(ctx context.Context, event lib.CurantisPublishedPatientEvent) (*lib.CurantisPublishedPatientEvent, error) {
+func handler(ctx context.Context, event lib.PublishedPatientEvent) (*lib.PublishedPatientEvent, error) {
 	span, _ := tracer.SpanFromContext(ctx)
 	newCtx := context.WithValue(ctx, "correlationId", event.MetaDetails.CorrelationId)
 

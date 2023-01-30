@@ -7,19 +7,19 @@ import (
 	"github.com/bix-digital/golang-fhir-models/fhir-models/fhir"
 )
 
-type CurantisEvent struct {
+type Event struct {
 	Version       string `json:"version"`
 	Source        string `json:"source"`
 	EventType     string `json:"eventType"`
 	CorrelationId string `json:"correlationId"`
 }
 
-type CurantisIncomingEvent struct {
-	CurantisEvent
+type IncomingEvent struct {
+	Event
 	Details EventDetail `json:"details"`
 }
 
-type CurantisPublishedPatientEvent struct {
+type PublishedPatientEvent struct {
 	MetaDetails MetaDetails  `json:"meta"`
 	Details     fhir.Patient `json:"data"`
 }
@@ -61,9 +61,9 @@ type MetaDetails struct {
 	IsDupe         bool      `json:"isDupe"`
 }
 
-func NewCurantisIncomingEvent(version string, eventType string, source string, correlationId string, details EventDetail) *CurantisIncomingEvent {
-	return &CurantisIncomingEvent{
-		CurantisEvent: CurantisEvent{
+func NewIncomingEvent(version string, eventType string, source string, correlationId string, details EventDetail) *IncomingEvent {
+	return &IncomingEvent{
+		Event: Event{
 			Version:       version,
 			Source:        source,
 			EventType:     eventType,
@@ -73,8 +73,8 @@ func NewCurantisIncomingEvent(version string, eventType string, source string, c
 	}
 }
 
-func NewCurantisPublishedPatientEvent(meta MetaDetails, details fhir.Patient) *CurantisPublishedPatientEvent {
-	return &CurantisPublishedPatientEvent{
+func NewPublishedPatientEvent(meta MetaDetails, details fhir.Patient) *PublishedPatientEvent {
+	return &PublishedPatientEvent{
 		MetaDetails: meta,
 		Details:     details,
 	}

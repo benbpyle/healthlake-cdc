@@ -6,6 +6,7 @@ import * as path from "path";
 import {IFunction} from 'aws-cdk-lib/aws-lambda';
 import {addHealthlakeToFunc} from "./function-utils";
 import {CfnFHIRDatastore} from "aws-cdk-lib/aws-healthlake";
+import {Key} from "aws-cdk-lib/aws-kms";
 
 export interface FunctionsStackProps extends cdk.NestedStackProps {
     version: string
@@ -18,17 +19,17 @@ export class FunctionsStack extends cdk.NestedStack {
     private _patientPublisher: IFunction;
     private readonly _storeId: string;
 
-    constructor(scope: Construct, id: string, props: FunctionsStackProps, hl: CfnFHIRDatastore) {
+    constructor(scope: Construct, id: string, props: FunctionsStackProps, hl: CfnFHIRDatastore, key: Key) {
         super(scope, id, props);
         this._storeId = Fn.importValue('main-HealthlakeInfra-primary-store-id')
-        this.buildPatientHydrator(hl);
+        this.buildPatientHydrator(hl, key);
         this.buildPatientPublisher(hl);
 
         Tags.of(this._patientHydrator).add("version", props.version);
         Tags.of(this._patientPublisher).add("version", props.version);
     }
 
-    buildPatientHydrator = (hl: CfnFHIRDatastore) => {
+    buildPatientHydrator = (hl: CfnFHIRDatastore, key: Key) => {
         this._patientHydrator = new GoFunction(this, `PatientHydratorFunction`, {
             entry: path.join(__dirname, `../src/patient-hydrator`),
             functionName: `healthlake-cdc-patient-hydrator`,
@@ -40,7 +41,7 @@ export class FunctionsStack extends cdk.NestedStack {
             },
         });
 
-        addHealthlakeToFunc(this, 'PatientHydratorFunction', this._patientHydrator, hl);
+        addHealthlakeToFunc(this, 'PatientHydratorFunction', this._patientHydrator, hl, key);
     }
 
     buildPatientPublisher = (hl: CfnFHIRDatastore) => {

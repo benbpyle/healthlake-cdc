@@ -45,7 +45,7 @@ func main() {
 	lambda.Start(ddlambda.WrapFunction(handler, lib.DataDogConfig()))
 }
 
-func handler(ctx context.Context, event lib.CurantisIncomingEvent) (*lib.PatientList, error) {
+func handler(ctx context.Context, event lib.IncomingEvent) (*lib.PatientList, error) {
 	span, _ := tracer.SpanFromContext(ctx)
 	newCtx := context.WithValue(ctx, "correlationId", event.CorrelationId)
 
@@ -74,7 +74,7 @@ func handler(ctx context.Context, event lib.CurantisIncomingEvent) (*lib.Patient
 	return splitBundle(newCtx, event, updated), err
 }
 
-func splitBundle(ctx context.Context, sourceEvent lib.CurantisIncomingEvent, bundle *fhir.Bundle) *lib.PatientList {
+func splitBundle(ctx context.Context, sourceEvent lib.IncomingEvent, bundle *fhir.Bundle) *lib.PatientList {
 	span, _ := tracer.SpanFromContext(ctx)
 	pl := lib.PatientList{
 		Patients: []lib.PatientPublisherState{},

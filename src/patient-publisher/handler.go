@@ -24,7 +24,7 @@ func main() {
 	lambda.Start(ddlambda.WrapFunction(handler, lib.DataDogConfig()))
 }
 
-func handler(ctx context.Context, event lib.PatientPublisherState) (*lib.CurantisPublishedPatientEvent, error) {
+func handler(ctx context.Context, event lib.PatientPublisherState) (*lib.PublishedPatientEvent, error) {
 	span, _ := tracer.SpanFromContext(ctx)
 	newCtx := context.WithValue(ctx, "correlationId", event.MetaDetails.CorrelationId)
 
@@ -36,7 +36,7 @@ func handler(ctx context.Context, event lib.PatientPublisherState) (*lib.Curanti
 			"correlationId": newCtx.Value("correlationId"),
 		}).Info("Logging out the event")
 
-	ce := lib.NewCurantisPublishedPatientEvent(
+	ce := lib.NewPublishedPatientEvent(
 		event.MetaDetails,
 		event.Patient)
 

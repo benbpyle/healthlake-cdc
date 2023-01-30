@@ -17,7 +17,7 @@ export class AppStack extends cdk.Stack {
 
         const func = new FunctionsStack(this, 'RuleHandler', {
             version: version
-        }, hlStack.cfnFHIRDatastore);
+        }, hlStack.cfnFHIRDatastore, hlStack.key);
 
         const dedupe = new ResourceDeduperStack(this, 'ResourceDeduper', {
             version: version
@@ -39,6 +39,6 @@ export class AppStack extends cdk.Stack {
 
         new EventBridgeRuleStack(this, 'EventBridgeRule', {
             func: handlerFunc.handler
-        })
+        }, hlStack.cfnFHIRDatastore)
     }
 }
